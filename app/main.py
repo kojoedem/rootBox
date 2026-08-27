@@ -1,4 +1,5 @@
 import os
+import json
 from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException, Response
 from fastapi.responses import HTMLResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -7,6 +8,7 @@ from contextlib import asynccontextmanager
 
 from app.database import get_db, init_db
 from app.vault import store_in_vault, read_from_vault, ensure_vault_exists
+from app.analysis import analyze_binary
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,7 +16,7 @@ async def lifespan(app: FastAPI):
     ensure_vault_exists()
     yield
 
-app = FastAPI(title="Malware Vault Repository", lifespan=lifespan)
+app = FastAPI(title="rootBox - Malware Vault", lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -48,6 +50,9 @@ async def handle_upload(
 
         vault_filename, sha256, md5, size = store_in_vault(content)
 
+        # Run automated static analysis pipeline
+        analysis_res = analyze_binary(content, file.filename, sha256, threat_type)
+
         conn = get_db()
         cursor = conn.cursor()
 
@@ -63,14 +68,21 @@ async def handle_upload(
             )
 
         cursor.execute("""
-            INSERT INTO samples (original_filename, vault_filename, file_size, sha256, md5, threat_type, file_format, description, analysis_notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (file.filename, vault_filename, size, sha256, md5, threat_type, file_format, description, analysis_notes))
+            INSERT INTO samples (
+                original_filename, vault_filename, file_size, sha256, md5, threat_type, file_format, description, analysis_notes,
+                entropy, entropy_level, magic_type, extracted_strings, hex_dump, yara_rule
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            file.filename, vault_filename, size, sha256, md5, threat_type, file_format, description, analysis_notes,
+            analysis_res["entropy"], analysis_res["entropy_level"], analysis_res["magic_type"],
+            json.dumps(analysis_res["extracted_strings"]), analysis_res["hex_dump"], analysis_res["yara_rule"]
+        ))
 
         conn.commit()
         conn.close()
 
-        return RedirectResponse(url="/?message=Sample+successfully+quarantined+and+stored", status_code=303)
+        return RedirectResponse(url="/?message=Sample+successfully+quarantined+and+analyzed", status_code=303)
     except Exception as e:
         return templates.TemplateResponse(request=request, name="upload.html", context={"error": f"Error uploading sample: {str(e)}"})
 
@@ -79,11 +91,18 @@ def sample_detail(request: Request, sample_id: int):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM samples WHERE id = ?", (sample_id,))
-    sample = cursor.fetchone()
+    sample_row = cursor.fetchone()
     conn.close()
 
-    if not sample:
+    if not sample_row:
         raise HTTPException(status_code=404, detail="Sample not found")
+
+    sample = dict(sample_row)
+    # Parse JSON extracted strings
+    try:
+        sample["extracted_strings_list"] = json.loads(sample.get("extracted_strings") or "[]")
+    except Exception:
+        sample["extracted_strings_list"] = []
 
     return templates.TemplateResponse(request=request, name="detail.html", context={"sample": sample})
 

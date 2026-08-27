@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class SampleBase(BaseModel):
@@ -18,6 +18,12 @@ class SampleResponse(SampleBase):
     file_size: int
     sha256: str
     md5: str
+    entropy: float
+    entropy_level: str
+    magic_type: str
+    extracted_strings: str
+    hex_dump: str
+    yara_rule: str
     uploaded_at: str
 
     class Config:

@@ -23,6 +23,12 @@ def init_db():
         file_format TEXT NOT NULL,
         description TEXT,
         analysis_notes TEXT,
+        entropy REAL DEFAULT 0.0,
+        entropy_level TEXT DEFAULT '',
+        magic_type TEXT DEFAULT '',
+        extracted_strings TEXT DEFAULT '',
+        hex_dump TEXT DEFAULT '',
+        yara_rule TEXT DEFAULT '',
         uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)

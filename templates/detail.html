@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Sample Details - {{ sample.original_filename }}{% endblock %}
+{% block title %}Sample Analysis - {{ sample.original_filename }} - rootBox{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-5xl mx-auto space-y-6">
+    <!-- Top Bar -->
     <div class="flex justify-between items-center">
         <div>
             <a href="/" class="text-sm text-gray-400 hover:text-white transition flex items-center space-x-1 mb-2">
@@ -12,7 +13,9 @@
                 </svg>
                 <span>Back to Dashboard</span>
             </a>
-            <h1 class="text-3xl font-bold text-white font-mono break-all">{{ sample.original_filename }}</h1>
+            <h1 class="text-3xl font-bold text-white font-mono break-all flex items-center space-x-3">
+                <span>{{ sample.original_filename }}</span>
+            </h1>
         </div>
         <a href="/download/{{ sample.id }}" class="bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-lg shadow flex items-center space-x-2 transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,32 +25,66 @@
         </a>
     </div>
 
-    <!-- Metadata Grid -->
+    <!-- Technical Properties & Identification -->
     <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
-        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Technical Properties</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2 flex items-center justify-between">
+            <span>Technical Properties & File Identification</span>
+            <span class="text-xs font-mono bg-gray-900 text-gray-400 px-2.5 py-1 rounded border border-gray-700">Sample #{{ sample.id }}</span>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
             <div>
-                <span class="block text-xs uppercase text-gray-400 font-semibold">Threat Category</span>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">Threat Classification</span>
                 <span class="inline-block mt-1 px-3 py-1 text-xs font-semibold rounded-full bg-red-950 text-red-400 border border-red-800">
                     {{ sample.threat_type }}
                 </span>
             </div>
             <div>
-                <span class="block text-xs uppercase text-gray-400 font-semibold">File Format / Architecture</span>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">User Format Classification</span>
                 <span class="text-gray-200 font-mono mt-1 block">{{ sample.file_format }}</span>
+            </div>
+            <div>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">Magic Byte File Identification</span>
+                <span class="text-yellow-400 font-mono mt-1 block text-xs font-semibold">{{ sample.magic_type if sample.magic_type else "Raw Binary Data" }}</span>
             </div>
             <div>
                 <span class="block text-xs uppercase text-gray-400 font-semibold">File Size</span>
                 <span class="text-gray-200 mt-1 block">{{ sample.file_size }} bytes ({{ (sample.file_size / 1024)|round(2) }} KB)</span>
             </div>
             <div>
-                <span class="block text-xs uppercase text-gray-400 font-semibold">Vault Storage Filename</span>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">Vault Quarantine Path</span>
                 <span class="text-gray-400 font-mono mt-1 block text-xs truncate">{{ sample.vault_filename }}</span>
             </div>
             <div>
-                <span class="block text-xs uppercase text-gray-400 font-semibold">Upload Date</span>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">Upload Timestamp</span>
                 <span class="text-gray-200 mt-1 block">{{ sample.uploaded_at }}</span>
             </div>
+        </div>
+    </div>
+
+    <!-- Entropy Analysis Gauge Section -->
+    <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2 flex justify-between items-center">
+            <span>Shannon Entropy Analysis (Obfuscation / Compression Gauge)</span>
+            <span class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-yellow-400">
+                Score: {{ sample.entropy if sample.entropy else 0.0 }} / 8.0
+            </span>
+        </h2>
+        <div>
+            <div class="flex justify-between text-xs text-gray-400 mb-1 font-mono">
+                <span>0.0 (Plaintext / Sparse)</span>
+                <span>5.5 (Standard Code)</span>
+                <span>8.0 (Encrypted / Packed Payload)</span>
+            </div>
+            <div class="w-full bg-gray-900 rounded-full h-4 overflow-hidden border border-gray-700 p-0.5">
+                {% set entropy_val = sample.entropy if sample.entropy else 0.0 %}
+                {% set pct = (entropy_val / 8.0 * 100)|round(1) %}
+                <div class="h-full rounded-full transition-all duration-500
+                    {% if entropy_val > 7.2 %}bg-red-500{% elif entropy_val > 5.5 %}bg-yellow-500{% else %}bg-green-500{% endif %}"
+                    style="width: {{ pct }}%;"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">
+                <strong class="text-gray-200">Analysis Rating:</strong> {{ sample.entropy_level if sample.entropy_level else "Standard Data" }}
+            </p>
         </div>
     </div>
 
@@ -70,9 +107,41 @@
         </div>
     </div>
 
+    <!-- Extracted IoC Strings Preview -->
+    <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2 flex justify-between items-center">
+            <span>Extracted Printable Strings (ASCII / Unicode IoCs)</span>
+            <span class="text-xs text-gray-400 font-normal">Found {{ sample.extracted_strings_list|length }} unique strings</span>
+        </h2>
+        <div class="bg-gray-900 border border-gray-700 rounded p-3 font-mono text-xs text-green-400 max-h-48 overflow-y-auto leading-relaxed">
+            {% if sample.extracted_strings_list %}
+                {% for s in sample.extracted_strings_list %}
+                <div class="hover:bg-gray-800 px-1 py-0.5 rounded border-b border-gray-800 last:border-0 truncate">{{ s }}</div>
+                {% endfor %}
+            {% else %}
+                <span class="text-gray-500 italic">No printable ASCII strings extracted.</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Hex Inspector Preview -->
+    <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Hex Inspector Preview (First 256 Bytes)</h2>
+        <pre class="bg-gray-900 border border-gray-700 rounded p-4 font-mono text-xs text-blue-300 overflow-x-auto whitespace-pre leading-snug">{{ sample.hex_dump if sample.hex_dump else "No hex preview available." }}</pre>
+    </div>
+
+    <!-- Generated YARA Detection Rule -->
+    <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2 flex justify-between items-center">
+            <span>Automated YARA Detection Rule</span>
+            <span class="text-xs text-red-400 font-mono bg-red-950 border border-red-800 px-2 py-0.5 rounded">SIEM / EDR Ready</span>
+        </h2>
+        <pre class="bg-gray-900 border border-gray-700 rounded p-4 font-mono text-xs text-yellow-300 overflow-x-auto whitespace-pre leading-relaxed">{{ sample.yara_rule if sample.yara_rule else "// YARA Rule not generated." }}</pre>
+    </div>
+
     <!-- Notes & Description -->
     <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
-        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Analysis & Description</h2>
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Analysis Notes & Description</h2>
         <div>
             <h3 class="text-xs uppercase text-gray-400 font-semibold mb-1">Description</h3>
             <p class="text-gray-300 bg-gray-900 p-3 rounded border border-gray-700 text-sm whitespace-pre-wrap">{{ sample.description if sample.description else "No description provided." }}</p>
