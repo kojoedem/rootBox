@@ -74,6 +74,57 @@ def extract_strings(data: bytes, min_len: int = 4, max_count: int = 40) -> List[
 
     return unique_strings
 
+def assess_harm_level(data: bytes, entropy: float, magic_type: str, extracted_strings: List[str]) -> tuple[int, str]:
+    """
+    Background heuristic analysis assessing whether the payload is harmful, suspicious, or low risk.
+    Returns: (threat_score: int [0-100], threat_level: str)
+    """
+    score = 0
+
+    # 1. Check EICAR standard test pattern
+    if b"EICAR-STANDARD-ANTIVIRUS-TEST-FILE" in data:
+        return 95, "Harmful / High Risk (Test Threat Pattern)"
+
+    # 2. Check Magic Byte Executable Signatures
+    if "Executable" in magic_type or "PE/EXE/DLL" in magic_type or "ELF" in magic_type:
+        score += 35
+
+    # 3. High Entropy Check (Packing / Encryption / Obfuscation)
+    if entropy > 7.2:
+        score += 35
+    elif entropy > 6.0:
+        score += 15
+
+    # 4. IoC String Inspection (Dangerous system calls, shell scripts, C2 patterns, ransomware terms)
+    high_risk_patterns = [
+        r"powershell", r"cmd\.exe", r"wscript", r"cscript", r"regadd", r"vssadmin",
+        r"bitcoin", r"ransom", r"decrypt", r"wallet", r"socket", r"connect",
+        r"downloadstring", r"exec", r"system\(", r"eval\(", r"chmod \+x"
+    ]
+
+    suspicious_string_hits = 0
+    all_text = " ".join(extracted_strings).lower()
+    for pat in high_risk_patterns:
+        if re.search(pat, all_text):
+            suspicious_string_hits += 1
+
+    if suspicious_string_hits >= 3:
+        score += 35
+    elif suspicious_string_hits >= 1:
+        score += 20
+
+    # Cap score at 100
+    final_score = min(score, 100)
+
+    if final_score >= 60:
+        level = "Harmful / High Risk"
+    elif final_score >= 30:
+        level = "Suspicious / Moderate Risk"
+    else:
+        level = "Low Risk / Likely Benign"
+
+    return final_score, level
+
 def generate_hex_dump(data: bytes, max_bytes: int = 256) -> str:
     """
     Generates formatted hex dump preview (address, hex bytes, ascii representation).
@@ -97,7 +148,6 @@ def generate_yara_rule(sample_name: str, sha256: str, threat_type: str, extracte
 
     string_rules = []
     for idx, s in enumerate(extracted_strings[:5]):
-        # Escape string characters for YARA syntax
         escaped_str = s.replace('\\', '\\\\').replace('"', '\\"')
         string_rules.append(f'        $str{idx + 1} = "{escaped_str}" ascii wide')
 
@@ -129,6 +179,7 @@ def analyze_binary(data: bytes, original_filename: str, sha256: str, threat_type
     strings = extract_strings(data)
     hex_dump = generate_hex_dump(data)
     yara_rule = generate_yara_rule(original_filename, sha256, threat_type, strings)
+    threat_score, threat_level = assess_harm_level(data, entropy, magic_type, strings)
 
     # Entropy interpretation
     if entropy > 7.2:
@@ -148,5 +199,7 @@ def analyze_binary(data: bytes, original_filename: str, sha256: str, threat_type
         "magic_type": magic_type,
         "extracted_strings": strings,
         "hex_dump": hex_dump,
-        "yara_rule": yara_rule
+        "yara_rule": yara_rule,
+        "threat_score": threat_score,
+        "threat_level": threat_level
     }

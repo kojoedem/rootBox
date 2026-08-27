@@ -29,6 +29,8 @@ def init_db():
         extracted_strings TEXT DEFAULT '',
         hex_dump TEXT DEFAULT '',
         yara_rule TEXT DEFAULT '',
+        threat_score INTEGER DEFAULT 0,
+        threat_level TEXT DEFAULT '',
         uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
@@ -43,7 +45,9 @@ def init_db():
         "magic_type": "TEXT DEFAULT ''",
         "extracted_strings": "TEXT DEFAULT ''",
         "hex_dump": "TEXT DEFAULT ''",
-        "yara_rule": "TEXT DEFAULT ''"
+        "yara_rule": "TEXT DEFAULT ''",
+        "threat_score": "INTEGER DEFAULT 0",
+        "threat_level": "TEXT DEFAULT ''"
     }
 
     for col_name, col_def in new_columns.items():

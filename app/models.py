@@ -24,6 +24,8 @@ class SampleResponse(SampleBase):
     extracted_strings: str
     hex_dump: str
     yara_rule: str
+    threat_score: int
+    threat_level: str
     uploaded_at: str
 
     class Config:
