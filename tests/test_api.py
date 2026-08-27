@@ -10,7 +10,6 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DATABASE_PATH", test_db)
     monkeypatch.setenv("VAULT_DIR", test_vault)
 
-    # Re-import main to trigger lifespan/setup with new env vars
     from app.main import app
     from app.database import init_db
     from app.vault import ensure_vault_exists
@@ -24,7 +23,8 @@ def client(tmp_path, monkeypatch):
 def test_homepage_empty(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert "Quarantine Vault Repository" in response.text
+    assert "rootBox" in response.text
+    assert "{your secure farm}" in response.text
     assert "No malware samples uploaded yet" in response.text
 
 def test_upload_and_download_flow(client):

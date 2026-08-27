@@ -1,6 +1,8 @@
-# Malware Vault
+# rootBox - {your secure farm}
 
-**Malware Vault** is a clean, professional web application built with **FastAPI** and **Tailwind CSS** designed for security analysts, researchers, and students to safely collect, store, inspect, and share malware and virus samples for educational and analysis purposes.
+**rootBox** is a clean, professional malware & virus repository web application built with **FastAPI** and **Tailwind CSS** designed for security analysts, researchers, and students to safely collect, store, inspect, and share malware and virus samples for educational and analysis purposes.
+
+Motto: `{your secure farm}`
 
 The application features strict containment mechanisms to disarm malware payloads at rest and prevent accidental execution or spread on the server and host machines.
 
@@ -46,7 +48,7 @@ python3 --version
 git clone <repository-url>
 cd rootBox
 
-pip install fastapi uvicorn jinja2 python-multipart pytest httpx
+pip install -r requirements.txt
 ```
 
 ### 3. Run Application Server
@@ -107,7 +109,8 @@ PYTHONPATH=. pytest tests/
 │   ├── test_api.py   # Integration tests for FastAPI endpoints
 │   └── test_vault.py # Unit tests for storage containment & disarming logic
 ├── LICENSE           # MIT License
-└── README.md         # Project documentation
+├── README.md         # Project documentation
+└── requirements.txt  # Python package requirements
 ```
 
 ---
