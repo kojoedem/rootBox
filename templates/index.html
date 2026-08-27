@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Malware Vault{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex justify-between items-center">
+    <div>
+        <h1 class="text-3xl font-bold text-white">Quarantine Vault Repository</h1>
+        <p class="text-gray-400 mt-1">Isolated sample containment and threat analysis repository</p>
+    </div>
+    <a href="/upload" class="bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-lg shadow flex items-center space-x-2 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Upload New Sample</span>
+    </a>
+</div>
+
+{% if message %}
+<div class="bg-green-900 border border-green-600 text-green-200 px-4 py-3 rounded mb-6">
+    {{ message }}
+</div>
+{% endif %}
+
+<div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700">
+    <div class="p-4 bg-gray-850 border-b border-gray-700 flex justify-between items-center">
+        <span class="text-sm font-semibold uppercase tracking-wider text-gray-400">Total Quarantined Samples: {{ samples|length }}</span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-gray-900 text-gray-400 uppercase text-xs font-semibold tracking-wider border-b border-gray-700">
+                <tr>
+                    <th class="py-3 px-4">ID</th>
+                    <th class="py-3 px-4">Filename</th>
+                    <th class="py-3 px-4">Threat Classification</th>
+                    <th class="py-3 px-4">Format</th>
+                    <th class="py-3 px-4">SHA-256 Hash</th>
+                    <th class="py-3 px-4">Size</th>
+                    <th class="py-3 px-4">Uploaded At</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+                {% for sample in samples %}
+                <tr class="hover:bg-gray-750 transition">
+                    <td class="py-3 px-4 font-mono text-gray-400">#{{ sample.id }}</td>
+                    <td class="py-3 px-4 font-medium text-white">{{ sample.original_filename }}</td>
+                    <td class="py-3 px-4">
+                        <span class="inline-block px-2.5 py-1 text-xs font-semibold rounded-full bg-red-950 text-red-400 border border-red-800">
+                            {{ sample.threat_type }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 font-mono text-xs uppercase text-gray-400">{{ sample.file_format }}</td>
+                    <td class="py-3 px-4 font-mono text-xs text-yellow-500 truncate max-w-xs" title="{{ sample.sha256 }}">
+                        {{ sample.sha256[:16] }}...
+                    </td>
+                    <td class="py-3 px-4 text-gray-400">{{ (sample.file_size / 1024)|round(1) }} KB</td>
+                    <td class="py-3 px-4 text-gray-400 text-xs">{{ sample.uploaded_at }}</td>
+                    <td class="py-3 px-4 text-right space-x-2">
+                        <a href="/sample/{{ sample.id }}" class="text-blue-400 hover:text-blue-300 font-medium text-xs">View Details</a>
+                        <a href="/download/{{ sample.id }}" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-2.5 py-1 rounded text-xs transition">Download Raw</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="py-8 text-center text-gray-500">
+                        No malware samples uploaded yet. Use the upload button above to quarantine a file.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

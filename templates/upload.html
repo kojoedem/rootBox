@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Sample - Malware Vault{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+    <h2 class="text-2xl font-bold text-white mb-2">Upload Malware Sample</h2>
+    <p class="text-sm text-gray-400 mb-6">Files will be automatically XOR-encrypted and stored in quarantined non-executable isolation.</p>
+
+    {% if error %}
+    <div class="bg-red-900 border border-red-600 text-red-200 px-4 py-3 rounded mb-6 text-sm">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form action="/upload" method="POST" enctype="multipart/form-data" class="space-y-5">
+        <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Select File Payload</label>
+            <input type="file" name="file" required class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600 cursor-pointer bg-gray-900 border border-gray-700 rounded-lg p-2">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Threat Classification / Category</label>
+            <select name="threat_type" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-red-500">
+                <option value="Ransomware">Ransomware</option>
+                <option value="Trojan">Trojan</option>
+                <option value="Worm">Worm</option>
+                <option value="Spyware">Spyware</option>
+                <option value="Rootkit">Rootkit</option>
+                <option value="Backdoor">Backdoor</option>
+                <option value="InfoStealer">InfoStealer</option>
+                <option value="Test Sample / EICAR">Test Sample / EICAR</option>
+                <option value="Other">Other / Unknown</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">File Format / Architecture</label>
+            <input type="text" name="file_format" placeholder="e.g. PE32, ELF64, APK, Docx Macro, Script" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-red-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Description</label>
+            <textarea name="description" rows="3" placeholder="Overview of sample source or observed behavior..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-red-500"></textarea>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Analysis / Technical Notes</label>
+            <textarea name="analysis_notes" rows="3" placeholder="IoCs, static/dynamic analysis details..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-red-500"></textarea>
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-3">
+            <a href="/" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition">Cancel</a>
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow transition">Upload to Vault</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
