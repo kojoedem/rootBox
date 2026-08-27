@@ -4,3 +4,9 @@ __pycache__/
 *.log
 storage/
 .pytest_cache/
+venv/
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
