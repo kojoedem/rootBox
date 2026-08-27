@@ -17,7 +17,13 @@
                     <span class="text-xs font-mono text-red-400 tracking-widest uppercase">{your secure farm}</span>
                 </div>
             </a>
-            <div class="space-x-4">
+            <div class="flex items-center space-x-4">
+                <button onclick="document.getElementById('safety-modal').classList.remove('hidden')" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-2 rounded-md font-medium transition flex items-center space-x-1">
+                    <svg class="w-4 h-4 text-green-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <span>Lab Safety Protocols</span>
+                </button>
                 <a href="/" class="hover:text-red-400 px-3 py-2 rounded-md text-sm font-medium transition">Dashboard</a>
                 <a href="/upload" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow transition">Upload Sample</a>
             </div>
@@ -27,6 +33,40 @@
     <main class="flex-grow max-w-7xl w-full mx-auto px-6 py-8">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Lab Safety Protocols Modal -->
+    <div id="safety-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg max-w-2xl w-full p-6 border border-gray-700 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+                <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+                    <span class="text-red-500">🛡️</span>
+                    <span>rootBox Containment & Safety Protocols</span>
+                </h3>
+                <button onclick="document.getElementById('safety-modal').classList.add('hidden')" class="text-gray-400 hover:text-white text-lg font-bold">&times;</button>
+            </div>
+            <div class="space-y-3 text-sm text-gray-300">
+                <p>
+                    <strong>1. At-Rest Disarming (XOR 0x5A):</strong>
+                    All binaries stored on disk in <code class="bg-gray-900 text-yellow-400 px-1 py-0.5 rounded">storage/</code> are bitwise XOR obfuscated. If accidental double-clicking occurs on the host, the file cannot execute as an active payload.
+                </p>
+                <p>
+                    <strong>2. File Permissions (0600):</strong>
+                    Files in the quarantine directory are saved with owner-only read/write privileges, stripping executable flags.
+                </p>
+                <p>
+                    <strong>3. Safe HTTP Attachment Headers:</strong>
+                    When downloading raw binaries, responses enforce <code class="bg-gray-900 text-yellow-400 px-1 py-0.5 rounded">X-Content-Type-Options: nosniff</code> and force a <code class="bg-gray-900 text-yellow-400 px-1 py-0.5 rounded">.bin</code> extension to prevent browser rendering or automatic execution.
+                </p>
+                <p>
+                    <strong>4. Shannon Entropy Analysis:</strong>
+                    Entropy values near 8.0 signal heavy encryption, packing, or compression commonly used by modern malware families.
+                </p>
+            </div>
+            <div class="pt-2 text-right">
+                <button onclick="document.getElementById('safety-modal').classList.add('hidden')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium">Understood</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="bg-gray-800 border-t border-gray-700 py-4 text-center text-gray-400 text-sm">
         rootBox &bull; {your secure farm} &copy; 2025 - Safe Containment Protocol Active
