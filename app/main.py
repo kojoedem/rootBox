@@ -50,7 +50,7 @@ async def handle_upload(
 
         vault_filename, sha256, md5, size = store_in_vault(content)
 
-        # Run automated static analysis pipeline
+        # Run automated static analysis and background harm assessment pipeline
         analysis_res = analyze_binary(content, file.filename, sha256, threat_type)
 
         conn = get_db()
@@ -70,13 +70,14 @@ async def handle_upload(
         cursor.execute("""
             INSERT INTO samples (
                 original_filename, vault_filename, file_size, sha256, md5, threat_type, file_format, description, analysis_notes,
-                entropy, entropy_level, magic_type, extracted_strings, hex_dump, yara_rule
+                entropy, entropy_level, magic_type, extracted_strings, hex_dump, yara_rule, threat_score, threat_level
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             file.filename, vault_filename, size, sha256, md5, threat_type, file_format, description, analysis_notes,
             analysis_res["entropy"], analysis_res["entropy_level"], analysis_res["magic_type"],
-            json.dumps(analysis_res["extracted_strings"]), analysis_res["hex_dump"], analysis_res["yara_rule"]
+            json.dumps(analysis_res["extracted_strings"]), analysis_res["hex_dump"], analysis_res["yara_rule"],
+            analysis_res["threat_score"], analysis_res["threat_level"]
         ))
 
         conn.commit()
@@ -98,7 +99,6 @@ def sample_detail(request: Request, sample_id: int):
         raise HTTPException(status_code=404, detail="Sample not found")
 
     sample = dict(sample_row)
-    # Parse JSON extracted strings
     try:
         sample["extracted_strings_list"] = json.loads(sample.get("extracted_strings") or "[]")
     except Exception:

@@ -25,6 +25,24 @@
         </a>
     </div>
 
+    <!-- Threat Harm Assessment Indicator Card -->
+    <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-3">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2 flex justify-between items-center">
+            <span>Automated Background Threat & Harm Assessment</span>
+            <span class="text-xs text-gray-400 font-normal">Offline Heuristic Engine</span>
+        </h2>
+        <div class="flex items-center space-x-4">
+            {% set score = sample.threat_score if sample.threat_score is defined else 0 %}
+            <div class="px-4 py-2 rounded-lg font-bold text-sm border font-mono shadow
+                {% if score >= 60 %}bg-red-950 text-red-400 border-red-800{% elif score >= 30 %}bg-yellow-950 text-yellow-400 border-yellow-800{% else %}bg-green-950 text-green-400 border-green-800{% endif %}">
+                {% if score >= 60 %}⚠️ HARMFUL / HIGH RISK{% elif score >= 30 %}⚡ SUSPICIOUS / MODERATE RISK{% else %}🛡️ LOW RISK / BENIGN{% endif %}
+            </div>
+            <div class="text-sm text-gray-300">
+                Threat Score: <strong class="text-yellow-400 font-mono">{{ score }} / 100</strong>
+            </div>
+        </div>
+    </div>
+
     <!-- Technical Properties & Identification -->
     <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
         <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2 flex items-center justify-between">
