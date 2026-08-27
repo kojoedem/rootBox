@@ -32,5 +32,23 @@ def init_db():
         uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
+
+    # Auto-migration for existing legacy database schemas
+    cursor.execute("PRAGMA table_info(samples)")
+    existing_columns = {row["name"] for row in cursor.fetchall()}
+
+    new_columns = {
+        "entropy": "REAL DEFAULT 0.0",
+        "entropy_level": "TEXT DEFAULT ''",
+        "magic_type": "TEXT DEFAULT ''",
+        "extracted_strings": "TEXT DEFAULT ''",
+        "hex_dump": "TEXT DEFAULT ''",
+        "yara_rule": "TEXT DEFAULT ''"
+    }
+
+    for col_name, col_def in new_columns.items():
+        if col_name not in existing_columns:
+            cursor.execute(f"ALTER TABLE samples ADD COLUMN {col_name} {col_def}")
+
     conn.commit()
     conn.close()
