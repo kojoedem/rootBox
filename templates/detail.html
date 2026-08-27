@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Sample Details - {{ sample.original_filename }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <a href="/" class="text-sm text-gray-400 hover:text-white transition flex items-center space-x-1 mb-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                <span>Back to Dashboard</span>
+            </a>
+            <h1 class="text-3xl font-bold text-white font-mono break-all">{{ sample.original_filename }}</h1>
+        </div>
+        <a href="/download/{{ sample.id }}" class="bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-lg shadow flex items-center space-x-2 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <span>Download Raw Binary</span>
+        </a>
+    </div>
+
+    <!-- Metadata Grid -->
+    <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Technical Properties</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">Threat Category</span>
+                <span class="inline-block mt-1 px-3 py-1 text-xs font-semibold rounded-full bg-red-950 text-red-400 border border-red-800">
+                    {{ sample.threat_type }}
+                </span>
+            </div>
+            <div>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">File Format / Architecture</span>
+                <span class="text-gray-200 font-mono mt-1 block">{{ sample.file_format }}</span>
+            </div>
+            <div>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">File Size</span>
+                <span class="text-gray-200 mt-1 block">{{ sample.file_size }} bytes ({{ (sample.file_size / 1024)|round(2) }} KB)</span>
+            </div>
+            <div>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">Vault Storage Filename</span>
+                <span class="text-gray-400 font-mono mt-1 block text-xs truncate">{{ sample.vault_filename }}</span>
+            </div>
+            <div>
+                <span class="block text-xs uppercase text-gray-400 font-semibold">Upload Date</span>
+                <span class="text-gray-200 mt-1 block">{{ sample.uploaded_at }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cryptographic Hashes -->
+    <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Cryptographic Hashes</h2>
+        <div class="space-y-3 font-mono text-sm">
+            <div>
+                <span class="block text-xs font-sans text-gray-400 font-semibold uppercase">SHA-256</span>
+                <div class="bg-gray-900 border border-gray-700 p-3 rounded text-yellow-400 break-all mt-1">
+                    {{ sample.sha256 }}
+                </div>
+            </div>
+            <div>
+                <span class="block text-xs font-sans text-gray-400 font-semibold uppercase">MD5</span>
+                <div class="bg-gray-900 border border-gray-700 p-3 rounded text-yellow-400 break-all mt-1">
+                    {{ sample.md5 }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes & Description -->
+    <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Analysis & Description</h2>
+        <div>
+            <h3 class="text-xs uppercase text-gray-400 font-semibold mb-1">Description</h3>
+            <p class="text-gray-300 bg-gray-900 p-3 rounded border border-gray-700 text-sm whitespace-pre-wrap">{{ sample.description if sample.description else "No description provided." }}</p>
+        </div>
+        <div>
+            <h3 class="text-xs uppercase text-gray-400 font-semibold mb-1">Technical / Analysis Notes</h3>
+            <p class="text-gray-300 bg-gray-900 p-3 rounded border border-gray-700 text-sm whitespace-pre-wrap">{{ sample.analysis_notes if sample.analysis_notes else "No technical notes provided." }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
