@@ -2,7 +2,7 @@
 
 **rootBox** is a clean, professional malware & virus repository web application built with **FastAPI** and **Tailwind CSS** designed for security analysts, researchers, and students to safely collect, store, inspect, and share malware and virus samples for educational and analysis purposes.
 
-Motto: `{your secure farm}`
+Motto: `{your secure malware farm}`
 
 The application features strict containment mechanisms to disarm malware payloads at rest and prevent accidental execution or spread on the server and host machines.
 
